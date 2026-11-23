@@ -20,7 +20,7 @@ struct TodoListView: View {
     
     @State private var selectedSortOption: SortOptions = .byTitle
     
-    @State private var datePicker: Date = Date()
+    @State private var selectedDate: Date = Date()
     
     
     var body: some View {
@@ -31,14 +31,14 @@ struct TodoListView: View {
                         // TextField
                         TextField("Todo title", text: $newTitle).textFieldStyle(RoundedBorderTextFieldStyle())
                         Button {
-                            
+                            addTodos()
                         } label: {
                             Text("Add").padding().fontWeight(.bold).background(.blue).clipShape(.rect(cornerRadius: 10)).foregroundStyle(.white)
                         }
                     }
                     
                     // Date Picker
-                    DatePicker("Date", selection: $datePicker, in: Date()...)
+                    DatePicker("Select Date", selection: $selectedDate, in: Date()...)
                     
                     // Segment Picker
                     Picker("Sort Todos", selection: $selectedSortOption) {
@@ -57,7 +57,7 @@ struct TodoListView: View {
                         VStack(alignment: .leading) {
                             Text(todo.title)
                             
-                            Text(todo.date, style: .date)
+                            Text(todo.date, style: .date).font(.caption).foregroundStyle(.secondary)
                         }
                         
                     }.listStyle(PlainListStyle())
@@ -78,6 +78,22 @@ struct TodoListView: View {
     }
     
     func addTodos() {
+        guard newTitle.count >= 2 else {
+            print("Title Should be more than 2 characters")
+            return
+        }
+        let newTodo = TodoModel(title: newTitle, date: selectedDate)
+        modelContext.insert(newTodo)
+        
+        do {
+            try modelContext.save()
+        }catch {
+            print("Failed to save todo: \(error.localizedDescription)")
+        }
+        
+        newTitle = ""
+        selectedDate = Date()
+        
         
     }
     
