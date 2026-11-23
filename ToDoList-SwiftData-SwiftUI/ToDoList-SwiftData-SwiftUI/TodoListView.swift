@@ -11,6 +11,18 @@ struct TodoListView: View {
     @Query(sort: [SortDescriptor(\TodoModel.title)])
     var titleTodos : [TodoModel]
     
+    @Query(filter: #Predicate <TodoModel>{ todo in
+        todo.isCompleted
+    }, sort: [SortDescriptor(\TodoModel.date)])
+    var completedDateTodos: [TodoModel]
+    
+    @Query(filter: #Predicate<TodoModel> { todo in
+        todo.isCompleted
+    }, sort: [SortDescriptor(\TodoModel.title)])
+    var completedTitleTodos: [TodoModel]
+    
+    @State private var showCompletedTodos: Bool = false
+    
     @State private var newTitle: String = ""
     
     enum SortOptions: String, CaseIterable {
@@ -50,6 +62,8 @@ struct TodoListView: View {
                     
                 }.padding()
                 
+                Toggle("Show Completed Only", isOn: $showCompletedTodos).padding()
+                
                 // List
                 List(sortedTodos, id: \.self) { todo in
                     HStack {
@@ -81,6 +95,8 @@ struct TodoListView: View {
                     
                 }
                 
+                
+                
             }.navigationTitle("Todos")
         }
     }
@@ -88,9 +104,9 @@ struct TodoListView: View {
     private var sortedTodos: [TodoModel] {
         switch selectedSortOption {
         case .byTitle:
-            return titleTodos
+            showCompletedTodos ? completedTitleTodos : titleTodos
         case .byDate:
-            return dateTodos
+            showCompletedTodos ? completedDateTodos : dateTodos
         }
     }
     
