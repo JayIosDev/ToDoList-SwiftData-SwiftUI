@@ -28,6 +28,7 @@ struct TodoListView: View {
             VStack {
                 VStack {
                     HStack {
+                        
                         // TextField
                         TextField("Todo title", text: $newTitle).textFieldStyle(RoundedBorderTextFieldStyle())
                         Button {
@@ -52,7 +53,13 @@ struct TodoListView: View {
                 // List
                 List(sortedTodos, id: \.self) { todo in
                     HStack {
-                        Text(todo.title)
+                        Button {
+                            toggleTodos(todo)
+                        } label: {
+                            Image(systemName: todo.isCompleted ? "checkmark.circle": "circle").font(.caption).foregroundStyle(todo.isCompleted ? .green : .gray)
+                        }
+                        Text(todo.title).foregroundStyle(todo.isCompleted ? .green : .blue).strikethrough(todo.isCompleted)
+                        
                         Spacer()
                         VStack(alignment: .leading) {
                             Text(todo.date, style: .date)
@@ -68,7 +75,7 @@ struct TodoListView: View {
                             } icon: {
                                 Image(systemName: "trash")
                             }
-
+                            
                         }
                     }
                     
@@ -103,12 +110,15 @@ struct TodoListView: View {
         
         newTitle = ""
         selectedDate = Date()
-        
-        
     }
     
     func deleteTodo(_ todo: TodoModel) {
         modelContext.delete(todo)
+        try? modelContext.save()
+    }
+    
+    func toggleTodos(_ todo: TodoModel) {
+        todo.isCompleted.toggle()
         try? modelContext.save()
     }
 }
