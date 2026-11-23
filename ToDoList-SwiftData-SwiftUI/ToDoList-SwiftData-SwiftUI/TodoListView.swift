@@ -36,22 +36,34 @@ struct TodoListView: View {
                             Text("Add").padding().fontWeight(.bold).background(.blue).clipShape(.rect(cornerRadius: 10)).foregroundStyle(.white)
                         }
                     }
-
-                    // Date Picker
-                     DatePicker("Date", selection: $datePicker, in: Date()...)
                     
-                // Segment Picker
+                    // Date Picker
+                    DatePicker("Date", selection: $datePicker, in: Date()...)
+                    
+                    // Segment Picker
                     Picker("Sort Todos", selection: $selectedSortOption) {
                         ForEach(SortOptions.allCases, id: \.self) { option in
                             Text(option.rawValue)
                         }
                     }.pickerStyle(SegmentedPickerStyle())
-
+                    
                 }.padding()
-              
-            // List
                 
-            Spacer()
+                // List
+                List(sortedTodos, id: \.self) { todo in
+                    HStack {
+                        Text(todo.title)
+                        Spacer()
+                        VStack(alignment: .leading) {
+                            Text(todo.title)
+                            
+                            Text(todo.date, style: .date)
+                        }
+                        
+                    }.listStyle(PlainListStyle())
+                    
+                }
+                
             }.navigationTitle("Todos")
         }
     }
