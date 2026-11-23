@@ -55,12 +55,22 @@ struct TodoListView: View {
                         Text(todo.title)
                         Spacer()
                         VStack(alignment: .leading) {
-                            Text(todo.title)
-                            
-                            Text(todo.date, style: .date).font(.caption).foregroundStyle(.secondary)
+                            Text(todo.date, style: .date)
+                            Text(todo.date, style: .time).font(.caption).foregroundStyle(.secondary)
                         }
                         
-                    }.listStyle(PlainListStyle())
+                    }.listStyle(PlainListStyle()).swipeActions {
+                        Button(role: .destructive) {
+                            deleteTodo(todo)
+                        } label: {
+                            Label {
+                                Text("Delete")
+                            } icon: {
+                                Image(systemName: "trash")
+                            }
+
+                        }
+                    }
                     
                 }
                 
@@ -98,7 +108,8 @@ struct TodoListView: View {
     }
     
     func deleteTodo(_ todo: TodoModel) {
-        
+        modelContext.delete(todo)
+        try? modelContext.save()
     }
 }
 
