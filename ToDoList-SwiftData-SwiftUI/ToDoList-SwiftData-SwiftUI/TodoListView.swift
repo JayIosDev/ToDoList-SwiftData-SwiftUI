@@ -25,6 +25,9 @@ struct TodoListView: View {
     
     @State private var newTitle: String = ""
     
+    @State private var selectedTags: Set<Tag> = []
+    @State private var tagCount:Int = 0
+    
     /*
      // Fetch Descriptor for all todos from now up until
      // at most seven. (Seven days into the future)
@@ -93,6 +96,20 @@ struct TodoListView: View {
                     // Date Picker
                     DatePicker("Select Date", selection: $selectedDate, in: Date()...)
                     
+                    ScrollView(.horizontal) {
+                        HStack {
+                            ForEach(Tag.allCases, id: \.self) { tag in
+                                Button {
+                                    //TODO: Toggle
+                                    toggelTag(tag)
+                                } label: {
+                                    Text(tag.rawValue.capitalized).padding(.horizontal, 10).padding(.vertical, 10).background(selectedTags.contains(tag) ? tag.color.opacity(0.8) : .gray.opacity(0.3)).foregroundStyle(.white).clipShape(Capsule())
+                                }
+                                
+                            }
+                        }
+                    }.scrollIndicators(.hidden)
+                    
                     // Segment Picker
                     Picker("Sort Todos", selection: $selectedSortOption) {
                         ForEach(SortOptions.allCases, id: \.self) { option in
@@ -118,10 +135,22 @@ struct TodoListView: View {
                         Text(todo.title).foregroundStyle(todo.isCompleted ? .green : .blue).strikethrough(todo.isCompleted)
                         
                         Spacer()
-                        VStack(alignment: .leading) {
-                            Text(todo.date, style: .date)
-                            Text(todo.date, style: .time).font(.caption).foregroundStyle(.secondary)
+                        VStack(alignment: .trailing) {
+                            VStack(alignment: .leading) {
+                                Text(todo.date, style: .date)
+                                Text(todo.date, style: .time).font(.caption).foregroundStyle(.secondary)
+                            }
+                            HStack {
+                                let tagsSorted = todo.tags.sorted(by: {$0.rawValue < $1.rawValue})
+                                
+                                ForEach(tagsSorted, id: \.self) { tag in
+                                    Text(tag.rawValue.capitalized).padding(.horizontal, 8).padding(.vertical, 4).background(tag.color).foregroundStyle(.white).font(.caption).clipShape(Capsule())
+                                    
+                                }
+                            }
+                            
                         }
+                        
                         
                     }.listStyle(PlainListStyle()).swipeActions {
                         Button(role: .destructive) {
@@ -132,14 +161,9 @@ struct TodoListView: View {
                             } icon: {
                                 Image(systemName: "trash")
                             }
-                            
                         }
                     }
-                    
                 }
-                
-                
-                
             }.navigationTitle("Todos")
         }
     }
@@ -158,7 +182,7 @@ struct TodoListView: View {
             print("Title Should be more than 2 characters")
             return
         }
-        let newTodo = TodoModel(title: newTitle, date: selectedDate)
+        let newTodo = TodoModel(title: newTitle, date: selectedDate, tags: selectedTags)
         modelContext.insert(newTodo)
         
         do {
@@ -168,7 +192,9 @@ struct TodoListView: View {
         }
         
         newTitle = ""
+        selectedTags = []
         selectedDate = Date()
+        tagCount = 0
     }
     
     func deleteTodo(_ todo: TodoModel) {
@@ -179,6 +205,18 @@ struct TodoListView: View {
     func toggleTodos(_ todo: TodoModel) {
         todo.isCompleted.toggle()
         try? modelContext.save()
+    }
+    
+    func toggelTag(_ tag: Tag) {
+        if selectedTags.contains(tag) {
+            selectedTags.remove(tag)
+            tagCount -= 1
+        }else {
+            if tagCount < 3 {
+                selectedTags.insert(tag)
+                tagCount += 1
+            }
+        }
     }
 }
 
