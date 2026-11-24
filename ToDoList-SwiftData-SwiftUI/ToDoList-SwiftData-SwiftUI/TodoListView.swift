@@ -25,6 +25,24 @@ struct TodoListView: View {
     
     @State private var newTitle: String = ""
     
+    // Fetch Descriptor for all todos from now up until
+    // at most seven. (Seven days into the future)
+    static var sevenDaysFetchDescriptor: FetchDescriptor<TodoModel> {
+        let date = Date()
+        
+        let aWeek = Calendar.current.date(byAdding: .day, value: 7, to: date)!
+        
+        let fetchDescriptor = FetchDescriptor<TodoModel>(predicate: #Predicate {
+            $0.date <= aWeek
+        }, sortBy: [SortDescriptor(\.date)])
+        
+        return fetchDescriptor
+    }
+    
+    @Query(TodoListView.sevenDaysFetchDescriptor)
+    private var sevenDaysTodos: [TodoModel]
+        
+    
     enum SortOptions: String, CaseIterable {
         case byTitle =  "By Title"
         case byDate = "By Date"
@@ -65,7 +83,8 @@ struct TodoListView: View {
                 Toggle("Show Completed Only", isOn: $showCompletedTodos).padding()
                 
                 // List
-                List(sortedTodos, id: \.self) { todo in
+//                List(sortedTodos, id: \.self) { todo in
+                List(sevenDaysTodos, id: \.self) { todo in
                     HStack {
                         Button {
                             toggleTodos(todo)
