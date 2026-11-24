@@ -3,7 +3,7 @@ import SwiftData
 @main struct MyApp: App {
     var body: some Scene {
         WindowGroup {
-            TodoListView().modelContainer(for: TodoModel.self)
+            TodosView().modelContainer(for: TodoModel.self)
         }
     }
 }
