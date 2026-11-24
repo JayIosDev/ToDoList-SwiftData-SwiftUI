@@ -25,23 +25,45 @@ struct TodoListView: View {
     
     @State private var newTitle: String = ""
     
-    // Fetch Descriptor for all todos from now up until
-    // at most seven. (Seven days into the future)
-    static var sevenDaysFetchDescriptor: FetchDescriptor<TodoModel> {
+    /*
+     // Fetch Descriptor for all todos from now up until
+     // at most seven. (Seven days into the future)
+     static var sevenDaysFetchDescriptor: FetchDescriptor<TodoModel> {
+     let date = Date()
+     
+     let aWeek = Calendar.current.date(byAdding: .day, value: 7, to: date)!
+     
+     let fetchDescriptor = FetchDescriptor<TodoModel>(predicate: #Predicate {
+     $0.date <= aWeek
+     }, sortBy: [SortDescriptor(\.date)])
+     
+     return fetchDescriptor
+     }
+     
+     @Query(TodoListView.sevenDaysFetchDescriptor)
+     private var sevenDaysTodos: [TodoModel]
+     */
+    
+    
+    
+    // Today Todos
+    static var todayFetchDescriptor: FetchDescriptor<TodoModel> {
         let date = Date()
         
-        let aWeek = Calendar.current.date(byAdding: .day, value: 7, to: date)!
+        let beginningOfTheDay = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: date)!
+        let endOfTheDay = Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: date)!
         
-        let fetchDescriptor = FetchDescriptor<TodoModel>(predicate: #Predicate {
-            $0.date <= aWeek
+        let descriptor = FetchDescriptor<TodoModel>(predicate: #Predicate{
+            $0.date >= beginningOfTheDay && $0.date <= endOfTheDay
         }, sortBy: [SortDescriptor(\.date)])
-        
-        return fetchDescriptor
+        return descriptor
     }
     
-    @Query(TodoListView.sevenDaysFetchDescriptor)
-    private var sevenDaysTodos: [TodoModel]
-        
+    @Query(TodoListView.todayFetchDescriptor)
+    private var todayTodos: [TodoModel]
+    
+    @State private var showTodaysTodos: Bool = false
+    
     
     enum SortOptions: String, CaseIterable {
         case byTitle =  "By Title"
@@ -82,9 +104,11 @@ struct TodoListView: View {
                 
                 Toggle("Show Completed Only", isOn: $showCompletedTodos).padding()
                 
+                Toggle("Show Today's Todos", isOn: $showTodaysTodos).padding()
+                
                 // List
-//                List(sortedTodos, id: \.self) { todo in
-                List(sevenDaysTodos, id: \.self) { todo in
+                List(showTodaysTodos ? todayTodos : sortedTodos, id: \.self) { todo in
+                    //List(sevenDaysTodos, id: \.self) { todo in
                     HStack {
                         Button {
                             toggleTodos(todo)
